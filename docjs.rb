@@ -1,7 +1,10 @@
-require 'rkelly'
+require_relative 'inspectors/ext_js_inspector'
 
-parser = RKelly::Parser.new
+module DocJS
 
-File.open('sample/simple.js') do |file|
-  ast = parser.parse(file.read)
 end
+
+# todo: will need to manually line up comments with nodes
+
+inspector = DocJS::Inspectors::ExtJsInspector.new
+inspector.inspect('./samples/extjs-simple.js')
