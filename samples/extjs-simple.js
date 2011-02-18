@@ -3,8 +3,8 @@
  */
 Ext.namespace('DocJS');
 
+otherFunctionCall('this is a test');
 
-alert('test');
 /**
  * @class document class
  */
