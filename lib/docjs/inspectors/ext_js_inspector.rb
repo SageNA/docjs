@@ -1,5 +1,4 @@
 require 'rkelly'
-require_relative '../parser'
 require_relative '../visitors/ext_js_inspection_visitor'
 require_relative '../meta/code_unit'
 require_relative '../meta/namespace'
@@ -8,7 +7,7 @@ module DocJS
   module Inspectors
     class ExtJsInspector
       def inspect(path)
-        parser = Parser.new
+        parser = RKelly::Parser.new
 
         File.open(path) do |file|
           ast = parser.parse(file.read)
