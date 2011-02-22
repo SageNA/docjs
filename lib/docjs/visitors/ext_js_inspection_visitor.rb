@@ -12,22 +12,34 @@ module DocJS
         @namespaces = []
       end
 
-      def visit_FunctionCallNode(o)
-        check_for_namespace(o)
-        super
+      def visit_DotAccessorNode(node)
+        if is_namespace_declaration?(node)
+          @namespaces.push(create_namespace_from(node))
+        end
       end
 
-      def check_for_namespace(node)
-        scope = node.value.value.value if node.value.respond_to?('value') && node.value.value.respond_to?('value')
-        function = node.value.accessor if node.value.respond_to?('accessor')
+      def is_namespace_declaration?(node)
+        return false if not node.accessor == 'namespace'
+        return false if not node.value.is_a? RKelly::Nodes::ResolveNode
+        return false if not node.value.value == 'Ext'
+        return false if not node.parent.is_a? RKelly::Nodes::FunctionCallNode
+        return false if not node.parent.arguments.value.first.is_a? RKelly::Nodes::StringNode
+        true
+      end
 
-        if scope == 'Ext' && function == 'namespace'
-          namespace = Meta::Namespace.new
-          namespace.name = node.arguments.value[0].value
-          namespace.comments = node.comments
+      def create_namespace_from(node)
+        namespace = Meta::Namespace.new
+        namespace.name = node.parent.arguments.value.first.value
+        namespace.comment = node.comments.first.value if node.comments.first.respond_to? :value
 
-          @namespaces.push(namespace)
-        end
+        namespace
+      end
+
+      def is_type_declaration?(node)
+        return false if not node.accessor == 'extend'
+        return false if not node.value.is_a? RKelly::Nodes::ResolveNode
+        return false if not node.value.value == 'Ext'
+        true
       end
     end
   end

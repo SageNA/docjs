@@ -2,7 +2,7 @@ module DocJS
   module Meta
     class Namespace
       attr_accessor :name,
-                    :comments,
+                    :comment,
                     :types
     end
   end
