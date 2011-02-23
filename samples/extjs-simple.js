@@ -10,6 +10,22 @@ otherFunctionCall('this is a test');
  */
 DocJS.Document = Ext.extend(Object, {
     /**
+     * A null property
+     */
+    propertyNull: null,
+    /**
+     * A number property
+     */
+    propertyNumber: 1,
+    /**
+     * An array property
+     */
+    propertyArray: [1, 2, 3],
+    /**
+     * A string property
+     */
+    propertyString: 'a string',
+    /**
      * A constructor.
      * @constructor
      * @param o

@@ -16,7 +16,7 @@ module DocJS
           code_unit.path = path
           code_unit.name = File.basename(path)
 
-          visitor = Visitors::ExtJsInspectionVisitor.new(code_unit)
+          visitor = Visitors::ExtJsInspectionVisitor.new()
 
           ast.accept(visitor)
 
