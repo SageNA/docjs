@@ -1,8 +1,9 @@
 module DocJS
   module Meta
-    class CodeUnit
+    class Project
       attr_accessor :name,
-                    :path,
+                    :classes,
+                    :functions,
                     :namespaces
     end
   end

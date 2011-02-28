@@ -1,5 +1,5 @@
 require 'rkelly'
-require_relative '../meta/namespace'
+require_relative '../meta/module'
 require_relative '../meta/class'
 require_relative '../meta/method'
 require_relative '../meta/property'
@@ -7,33 +7,35 @@ require_relative '../meta/property'
 module DocJS
   module Visitors
     class ExtJsInspectionVisitor < RKelly::Visitors::Visitor
-      attr_accessor :namespaces,
-                    :types
+      attr_accessor :modules,
+                    :classes,
+                    :functions
 
       def initialize()
-        @namespaces = []
-        @types = []
+        @modules = []
+        @classes = []
+        @functions = []
       end
 
       def visit_DotAccessorNode(node)
-        if is_namespace_declaration?(node)
-          @namespaces << create_namespace(node)
-        elsif is_type_declaration?(node)
-          @types << create_type(node)
+        if is_module_declaration?(node)
+          @modules << create_module_from_node(node)
+        elsif is_class_declaration?(node)
+          @classes << create_class_from_node(node)
         end
       end
 
-      def accessor_to_path(node)
+      def node_to_path(node)
         return [node.value] if node.is_a? RKelly::Nodes::ResolveNode
-        return accessor_to_path(node.value) + [node.accessor] if node.is_a? RKelly::Nodes::DotAccessorNode
+        return node_to_path(node.value) + [node.accessor] if node.is_a? RKelly::Nodes::DotAccessorNode
         []
       end
 
-      def get_node_comment(node)
+      def get_comment_for_node(node)
         node.comments.first.value if node.comments.first.respond_to? :value
       end
 
-      def is_namespace_declaration?(node)
+      def is_module_declaration?(node)
         return false unless node.accessor == 'namespace'
         return false unless node.value.is_a? RKelly::Nodes::ResolveNode
         return false unless node.value.value == 'Ext'
@@ -43,15 +45,15 @@ module DocJS
         true
       end
 
-      def create_namespace(node)
-        namespace = Meta::Namespace.new
-        namespace.name = node.parent.arguments.value.first.value
-        namespace.comment = get_node_comment(node)
+      def create_module_from_node(node)
+        result = Meta::Module.new
+        result.name = node.parent.arguments.value.first.value
+        result.comment = get_comment_for_node(node)
 
-        namespace
+        result
       end
 
-      def is_type_declaration?(node)
+      def is_class_declaration?(node)
         return false unless node.accessor == 'extend'
         return false unless node.value.is_a? RKelly::Nodes::ResolveNode
         return false unless node.value.value == 'Ext'
@@ -60,11 +62,11 @@ module DocJS
         true
       end
 
-      def create_type(node)
+      def create_class_from_node(node)
         extend_call = node.parent
 
-        type = Meta::Class.new
-        type.comment = get_node_comment(node)
+        result = Meta::Class.new
+        result.comment = get_comment_for_node(node)
 
         case node.parent.arguments.value.length
           when 2 then
@@ -81,34 +83,31 @@ module DocJS
             raise 'Could not understand type declaration.'
         end
 
-        type.name = accessor_to_path(name_node).join('.')
-        type.extends << accessor_to_path(extends_node).join('.')
+        result.name = node_to_path(name_node).join('.')
+        result.extends << node_to_path(extends_node).join('.')
 
-        #BreakNode ContinueNode EmptyStatementNode FalseNode
-        #NullNode NumberNode ParameterNode RegexpNode ResolveNode StringNode
-        #ThisNode TrueNode
         properties_node.value.each do |property|
           name = property.name
-          comment = get_node_comment(property)
+          comment = get_comment_for_node(property)
           case true
             when property.value.is_a?(RKelly::Nodes::FunctionExprNode) then
-              type.methods << Meta::Method.new(name, comment)
+              result.methods << Meta::Method.new(name, comment)
             when property.value.is_a?(RKelly::Nodes::NullNode) then
-              type.properties << Meta::Property.new(name, comment, 'null', nil)
+              result.properties << Meta::Property.new(name, comment, 'null', nil)
             when property.value.is_a?(RKelly::Nodes::TrueNode) then
-              type.properties << Meta::Property.new(name, comment, 'boolean', true)
+              result.properties << Meta::Property.new(name, comment, 'boolean', true)
             when property.value.is_a?(RKelly::Nodes::FalseNode) then
-              type.properties << Meta::Property.new(name, comment, 'boolean', false)
+              result.properties << Meta::Property.new(name, comment, 'boolean', false)
             when property.value.is_a?(RKelly::Nodes::StringNode) then
-              type.properties << Meta::Property.new(name, comment, 'string', property.value.value)
+              result.properties << Meta::Property.new(name, comment, 'string', property.value.value)
             when property.value.is_a?(RKelly::Nodes::NumberNode) then
-              type.properties << Meta::Property.new(name, comment, 'number', property.value.value)
+              result.properties << Meta::Property.new(name, comment, 'number', property.value.value)
             else
-              type.properties << Meta::Property.new(name, comment, 'object')
+              result.properties << Meta::Property.new(name, comment, 'object')
           end
         end
 
-        type
+        result
       end
     end
   end

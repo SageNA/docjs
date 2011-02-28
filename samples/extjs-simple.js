@@ -5,6 +5,16 @@ Ext.namespace('DocJS');
 
 otherFunctionCall('this is a test');
 
+DocJS.Library = function()
+{
+
+};
+
+function anotherGlobalFunction()
+{
+
+}
+
 /**
  * @class document class
  */

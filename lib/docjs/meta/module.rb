@@ -1,9 +1,8 @@
 module DocJS
   module Meta
-    class Namespace
+    class Module
       attr_accessor :name,
-                    :comment,
-                    :types
+                    :comment
 
       def initialize(name = nil, comment = nil)
         @name = name

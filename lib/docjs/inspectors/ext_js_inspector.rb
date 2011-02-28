@@ -1,7 +1,7 @@
 require 'rkelly'
 require_relative '../visitors/ext_js_inspection_visitor'
-require_relative '../meta/code_unit'
-require_relative '../meta/namespace'
+require_relative '../meta/file'
+require_relative '../meta/module'
 
 module DocJS
   module Inspectors
@@ -12,15 +12,15 @@ module DocJS
         File.open(path) do |file|
           ast = parser.parse(file.read)
 
-          code_unit = Meta::CodeUnit.new
-          code_unit.path = path
-          code_unit.name = File.basename(path)
+          source_file = Meta::File.new
+          source_file.path = path
+          source_file.name = File.basename(path)
 
           visitor = Visitors::ExtJsInspectionVisitor.new()
 
           ast.accept(visitor)
 
-          code_unit
+          source_file
         end
       end
     end
