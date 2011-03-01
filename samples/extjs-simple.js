@@ -5,15 +5,29 @@ Ext.namespace('DocJS');
 
 otherFunctionCall('this is a test');
 
+/**
+ * static function
+ */
 DocJS.Library = function()
 {
 
 };
 
+/**
+ * global function
+ */
 function anotherGlobalFunction()
 {
 
 }
+
+/**
+ * local function
+ */
+var assignedToLocal = function()
+{
+
+};
 
 /**
  * @class document class

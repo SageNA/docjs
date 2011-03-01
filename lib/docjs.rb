@@ -7,4 +7,4 @@ module DocJS
 end
 
 inspector = DocJS::Inspectors::ExtJsInspector.new
-inspector.inspect('./samples/extjs-simple.js')
+inspector.inspect_file('./samples/extjs-simple-enclosed.js')

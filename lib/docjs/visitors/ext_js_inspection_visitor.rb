@@ -17,14 +17,6 @@ module DocJS
         @functions = []
       end
 
-      def visit_DotAccessorNode(node)
-        if is_module_declaration?(node)
-          @modules << create_module_from_node(node)
-        elsif is_class_declaration?(node)
-          @classes << create_class_from_node(node)
-        end
-      end
-
       def node_to_path(node)
         return [node.value] if node.is_a? RKelly::Nodes::ResolveNode
         return node_to_path(node.value) + [node.accessor] if node.is_a? RKelly::Nodes::DotAccessorNode
@@ -33,6 +25,47 @@ module DocJS
 
       def get_comment_for_node(node)
         node.comments.first.value if node.comments.first.respond_to? :value
+      end
+
+      def visit_DotAccessorNode(node)
+        if is_module_declaration?(node)
+          @modules << create_module_from_node(node)
+        elsif is_class_declaration?(node)
+          @classes << create_class_from_node(node)
+        end
+      end
+
+      def visit_FunctionDeclNode(node)
+        if is_function_declaration?(node)
+          @functions << create_declared_function_from_node(node)
+        end
+      end
+
+      def visit_FunctionExprNode(node)
+        if is_function_assignment?(node)
+          @functions << create_assigned_function_from_node(node)
+        end
+      end
+
+      def is_function_assignment?(node)
+        return false unless node.parent.is_a? RKelly::Nodes::OpEqualNode
+        true
+      end
+
+      def create_assigned_function_from_node(node)
+        name = node_to_path(node.parent.left).join('.')
+        comment = get_comment_for_node(node)
+        Meta::Method.new(name, comment)
+      end
+
+      def is_function_declaration?(node)
+        return false unless node.parent.is_a? RKelly::Nodes::SourceElementsNode
+        true
+      end
+
+      def create_declared_function_from_node(node)
+        comment = get_comment_for_node(node)
+        Meta::Method.new(node.value, comment)
       end
 
       def is_module_declaration?(node)

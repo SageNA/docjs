@@ -6,7 +6,7 @@ require_relative '../meta/module'
 module DocJS
   module Inspectors
     class ExtJsInspector
-      def inspect(path)
+      def inspect_file(path)
         parser = RKelly::Parser.new
 
         File.open(path) do |file|
