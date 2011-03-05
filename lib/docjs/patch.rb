@@ -14,6 +14,16 @@ module RKelly
     class Node
       attr_accessor :parent
     end
+
+    class FunctionExprNode
+      attr_reader :function_name, :function_body, :arguments
+      def initialize(name, body, args = [])
+        super(body)
+        @function_name = name
+        @function_body = body
+        @arguments = args
+      end
+    end
   end
 
   class Parser

@@ -9,7 +9,8 @@ module DocJS
     class ExtJsInspectionVisitor < RKelly::Visitors::Visitor
       attr_accessor :modules,
                     :classes,
-                    :functions
+                    :functions,
+                    :aliases
 
       def initialize()
         @modules = []
