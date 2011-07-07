@@ -1,7 +1,7 @@
 require 'rkelly'
 require_relative '../meta/module'
 require_relative '../meta/class'
-require_relative '../meta/method'
+require_relative '../meta/function'
 require_relative '../meta/property'
 
 module DocJS
@@ -34,18 +34,21 @@ module DocJS
         elsif is_class_declaration?(node)
           @classes << create_class_from_node(node)
         end
+        super
       end
 
       def visit_FunctionDeclNode(node)
         if is_function_declaration?(node)
           @functions << create_declared_function_from_node(node)
         end
+        super
       end
 
       def visit_FunctionExprNode(node)
         if is_function_assignment?(node)
           @functions << create_assigned_function_from_node(node)
         end
+        super
       end
 
       def is_function_assignment?(node)
@@ -56,7 +59,7 @@ module DocJS
       def create_assigned_function_from_node(node)
         name = node_to_path(node.parent.left).join('.')
         comment = get_comment_for_node(node)
-        Meta::Method.new(name, comment)
+        Meta::Function.new(name, comment)
       end
 
       def is_function_declaration?(node)
@@ -66,7 +69,7 @@ module DocJS
 
       def create_declared_function_from_node(node)
         comment = get_comment_for_node(node)
-        Meta::Method.new(node.value, comment)
+        Meta::Function.new(node.function_name, comment)
       end
 
       def is_module_declaration?(node)
@@ -125,7 +128,7 @@ module DocJS
           comment = get_comment_for_node(property)
           case true
             when property.value.is_a?(RKelly::Nodes::FunctionExprNode) then
-              result.methods << Meta::Method.new(name, comment)
+              result.methods << Meta::Function.new(name, comment)
             when property.value.is_a?(RKelly::Nodes::NullNode) then
               result.properties << Meta::Property.new(name, comment, 'null', nil)
             when property.value.is_a?(RKelly::Nodes::TrueNode) then

@@ -1,6 +1,6 @@
 module DocJS
   module Meta
-    class Method
+    class Function
       attr_accessor :name,
                     :comment
 

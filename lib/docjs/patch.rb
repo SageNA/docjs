@@ -29,7 +29,7 @@ module RKelly
   class Parser
     private
     def apply_comments(ast)
-      link_children(ast, *ast.value)
+      link_children(ast)
 
       comment_hash = Hash.new
 
@@ -47,10 +47,11 @@ module RKelly
       ast
     end
 
-    def link_children(parent, *children)
-      children.each do |child|
-        child.parent = parent if child.respond_to? :parent
-        link_children(child, child.value) if child.respond_to? :value
+    def link_children(node)
+      return unless node.is_a? RKelly::Nodes::Node
+      (node.value.is_a?(Array) ? node.value : [node.value]).each do |child|
+        child.parent = node if child.respond_to? :parent
+        link_children(child) if child.respond_to? :value
       end
     end
   end
