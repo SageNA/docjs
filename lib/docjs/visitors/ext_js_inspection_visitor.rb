@@ -125,26 +125,61 @@ module DocJS
 
         properties_node.value.each do |property|
           name = property.name
+          type = get_type_for_node(property.value)
+          value = get_value_for_node(property.value)
           comment = get_comment_for_node(property)
           case true
             when property.value.is_a?(RKelly::Nodes::FunctionExprNode) then
               result.methods << Meta::Function.new(name, comment)
-            when property.value.is_a?(RKelly::Nodes::NullNode) then
-              result.properties << Meta::Property.new(name, comment, 'null', nil)
-            when property.value.is_a?(RKelly::Nodes::TrueNode) then
-              result.properties << Meta::Property.new(name, comment, 'boolean', true)
-            when property.value.is_a?(RKelly::Nodes::FalseNode) then
-              result.properties << Meta::Property.new(name, comment, 'boolean', false)
-            when property.value.is_a?(RKelly::Nodes::StringNode) then
-              result.properties << Meta::Property.new(name, comment, 'string', property.value.value)
-            when property.value.is_a?(RKelly::Nodes::NumberNode) then
-              result.properties << Meta::Property.new(name, comment, 'number', property.value.value)
             else
-              result.properties << Meta::Property.new(name, comment, 'object')
+              result.properties << Meta::Property.new(name, comment, type, value)
           end
         end
 
         result
+      end
+
+      def get_type_for_node(node)
+        case true
+          when node.is_a?(RKelly::Nodes::FunctionExprNode) then 'function'
+          when node.is_a?(RKelly::Nodes::NullNode) then 'null'
+          when node.is_a?(RKelly::Nodes::TrueNode) then 'boolean'
+          when node.is_a?(RKelly::Nodes::FalseNode) then 'boolean'
+          when node.is_a?(RKelly::Nodes::StringNode) then 'string'
+          when node.is_a?(RKelly::Nodes::NumberNode) then 'number'
+          when node.is_a?(RKelly::Nodes::ArrayNode) then 'object'
+          when node.is_a?(RKelly::Nodes::ObjectLiteralNode) then 'object'
+          else 'undefined'
+        end
+      end
+
+      def get_value_for_node(node)
+        case true
+          when node.is_a?(RKelly::Nodes::NullNode) then
+            return nil
+          when node.is_a?(RKelly::Nodes::TrueNode) then
+            return true
+          when node.is_a?(RKelly::Nodes::FalseNode) then
+            return false
+          when node.is_a?(RKelly::Nodes::StringNode) then
+            return node.value
+          when node.is_a?(RKelly::Nodes::NumberNode) then
+            return node.value
+          when node.is_a?(RKelly::Nodes::ArrayNode) then
+            value = []
+            node.value.each do |element|
+              value << get_value_for_node(element.value)
+            end
+            return value
+          when node.is_a?(RKelly::Nodes::ObjectLiteralNode) then
+            value = {}
+            node.value.each do |property|
+              value[property.name] = get_value_for_node(property.value)
+            end
+            return value
+          else
+            return nil
+        end
       end
     end
   end

@@ -8,7 +8,6 @@ Ext.namespace('DocJS');
 
     /**
      * static function
-     */
     DocJS.Library = function()
     {
 
@@ -50,6 +49,10 @@ Ext.namespace('DocJS');
          * A string property
          */
         propertyString: 'a string',
+        propertyObject: {
+            'one': 'a',
+            'two': 'b'
+        },
         /**
          * A constructor.
          * @constructor
