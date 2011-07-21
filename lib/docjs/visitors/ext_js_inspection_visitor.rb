@@ -28,6 +28,55 @@ module DocJS
         node.comments.first.value if node.comments.first.respond_to? :value
       end
 
+      def visit_FunctionCallNode(node)
+        if is_module_assignment?(node)
+          @modules << create_assigned_module_from_node(node)
+        end
+        super
+      end
+
+      def is_module_assignment?(node)
+        return false unless node.parent.is_a? RKelly::Nodes::OpEqualNode
+        return false unless node.value.is_a? RKelly::Nodes::FunctionExprNode
+
+        body = node.value.value
+        source = body && body.value
+        statements = source && source.value
+        function_return = statements && statements.find {|child| child.is_a? RKelly::Nodes::ReturnNode }
+
+        return false unless function_return
+        return false unless function_return.value.is_a? RKelly::Nodes::ObjectLiteralNode
+
+        true
+      end
+
+      def create_assigned_module_from_node(node)
+        result = Meta::Module.new
+        result.name = node_to_path(node.parent.left).join('.')
+        result.comment = get_comment_for_node(node.value)
+
+        body = node.value.value
+        source = body.value
+        statements = source.value
+        function_return = statements.find {|child| child.is_a? RKelly::Nodes::ReturnNode }
+
+        object_literal = function_return.value
+        object_literal.value.each do |property|
+          name = property.name
+          type = get_type_for_node(property.value)
+          value = get_value_for_node(property.value)
+          comment = get_comment_for_node(property)
+          case true
+            when property.value.is_a?(RKelly::Nodes::FunctionExprNode) then
+              result.methods << Meta::Function.new(name, comment)
+            else
+              result.properties << Meta::Property.new(name, comment, type, value)
+          end
+        end
+
+        result
+      end
+
       def visit_DotAccessorNode(node)
         if is_module_declaration?(node)
           @modules << create_module_from_node(node)
