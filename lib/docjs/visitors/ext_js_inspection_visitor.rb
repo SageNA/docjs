@@ -133,7 +133,7 @@ module DocJS
 
       def create_module_from_node(node)
         result = Meta::Module.new
-        result.name = node.parent.arguments.value.first.value
+        result.name = node.parent.arguments.value.first.value[1..-2]
         result.comment = get_comment_for_node(node)
 
         result
@@ -202,6 +202,12 @@ module DocJS
         end
       end
 
+      def remove_quotes(string)
+        return string[1..-2] if string[0] == "'" && string[-1] == "'"
+        return string[1..-2] if string[0] == '"' && string[-2] == '"'
+        string
+      end
+
       def get_value_for_node(node)
         case true
           when node.is_a?(RKelly::Nodes::NullNode) then
@@ -211,7 +217,7 @@ module DocJS
           when node.is_a?(RKelly::Nodes::FalseNode) then
             return false
           when node.is_a?(RKelly::Nodes::StringNode) then
-            return node.value
+            return node.value[1..-2]
           when node.is_a?(RKelly::Nodes::NumberNode) then
             return node.value
           when node.is_a?(RKelly::Nodes::ArrayNode) then
@@ -223,7 +229,7 @@ module DocJS
           when node.is_a?(RKelly::Nodes::ObjectLiteralNode) then
             value = {}
             node.value.each do |property|
-              value[property.name] = get_value_for_node(property.value)
+              value[remove_quotes(property.name)] = get_value_for_node(property.value)
             end
             return value
           else

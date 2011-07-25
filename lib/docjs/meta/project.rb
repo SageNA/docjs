@@ -16,6 +16,22 @@ module DocJS
           end
         end
       end
+
+      def modules
+        @files.each do |file|
+          file.modules.each do |mod|
+            yield mod, file
+          end
+        end
+      end
+
+      def functions
+        @files.each do |file|
+          file.functions.each do |fn|
+            yield fn, file
+          end
+        end
+      end
     end
   end
 end

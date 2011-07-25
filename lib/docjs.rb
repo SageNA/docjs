@@ -5,3 +5,4 @@ require_relative 'docjs/inspectors/ext_js_inspector'
 module DocJS
 
 end
+
