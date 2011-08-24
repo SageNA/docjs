@@ -204,7 +204,7 @@ module DocJS
 
       def remove_quotes(string)
         return string[1..-2] if string[0] == "'" && string[-1] == "'"
-        return string[1..-2] if string[0] == '"' && string[-2] == '"'
+        return string[1..-2] if string[0] == '"' && string[-1] == '"'
         string
       end
 
