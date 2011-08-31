@@ -53,6 +53,10 @@ module RKelly
         child.parent = node if child.respond_to? :parent
         link_children(child) if child.respond_to? :value
       end
+      if node.is_a? RKelly::Nodes::FunctionCallNode
+        node.arguments.parent = node if node.arguments.respond_to? :parent
+        link_children(node.arguments) if node.arguments.respond_to? :value
+      end
     end
   end
 end
