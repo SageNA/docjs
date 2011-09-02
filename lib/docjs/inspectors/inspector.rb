@@ -13,10 +13,57 @@ module DocJS
       end
 
       def inspect_file(path)
-        parser = RKelly::Parser.new
+        process_file(path)
+      end
 
+      def inspect_path(path, recursive = true, &block)
+        project = Meta::Project.new(path)
+
+        iterate_path(path, recursive) do |file|
+          next if block_given? && !yield(file)
+
+          project.files << process_file(file)
+        end
+
+        project
+      end
+
+      protected
+      def iterate_path(path, recursive = true)
+        Find.find(path) do |file|
+          next if file == path
+
+          if FileTest.directory? file
+            throw :prune if !recursive
+          else
+            yield file
+          end
+        end
+      end
+
+      def process_file(path)
         File.open(path) do |file|
-          ast = parser.parse(file.read)
+          content = file.read
+
+          # todo: remove and add logging functionality
+          print "#{path}"
+
+          parser = RKelly::Parser.new
+
+          begin
+            ast = parser.parse(content)
+          rescue Exception
+            ast = nil
+          end
+
+          if ast.nil?
+            # todo: remove and add logging functionality
+            print " (ERROR)\n"
+            next
+          end
+
+          # todo: remove and add logging functionality
+          print "\n"
 
           source_file = Meta::File.new(File.basename(path), path)
 
@@ -29,15 +76,6 @@ module DocJS
           source_file.functions = visitor.functions
           source_file
         end
-      end
-
-      def inspect_path(path)
-        project = Meta::Project.new(path)
-        Find.find(path) do |file|
-          next if FileTest.directory? file
-          project.files << inspect_file(file)
-        end
-        project
       end
     end
   end

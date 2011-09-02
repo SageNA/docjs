@@ -26,7 +26,26 @@ module RKelly
     end
   end
 
+  class PatchedTokenizer < Tokenizer
+    def raw_tokens(string)
+      tokens = super(string)
+      last_token = nil
+      for token in tokens
+
+        # hack fix for parsing issue with dojo where a prefix operator is preceded by a newline
+        if token.name == :LITERALS && token.value == '++' && last_token
+          last_token.value = last_token.value.gsub(/\n/, ' ') if last_token.name == :S
+        end
+
+        last_token = token
+      end
+      tokens
+    end
+  end
+
   class Parser
+    TOKENIZER = PatchedTokenizer.new
+
     private
     def apply_comments(ast)
       link_children(ast)

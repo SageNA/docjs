@@ -1,3 +1,6 @@
+/**
+ * A module
+ */
 define('DocJS/Document', ['Object'], function() {
     otherFunctionCall('this is a test');
 

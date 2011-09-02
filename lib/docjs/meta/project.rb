@@ -10,26 +10,38 @@ module DocJS
       end
 
       def classes
-        @files.each do |file|
-          file.classes.each do |cls|
-            yield cls, file
+        if block_given?
+          @files.each do |file|
+            file.classes.each do |cls|
+              yield cls, file
+            end
           end
+        else
+          (@files.map do |file| file.classes end).flatten
         end
       end
 
       def modules
-        @files.each do |file|
-          file.modules.each do |mod|
-            yield mod, file
+        if block_given?
+          @files.each do |file|
+            file.modules.each do |cls|
+              yield cls, file
+            end
           end
+        else
+          (@files.map do |file| file.modules end).flatten
         end
       end
 
       def functions
-        @files.each do |file|
-          file.functions.each do |fn|
-            yield fn, file
+        if block_given?
+          @files.each do |file|
+            file.functions.each do |cls|
+              yield cls, file
+            end
           end
+        else
+          (@files.map do |file| file.functions end).flatten
         end
       end
     end

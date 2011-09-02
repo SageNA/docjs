@@ -25,7 +25,7 @@ module DocJS
 
       def create_module_from_node(node)
         result = Meta::Module.new
-        result.comment = get_comment_for_node(node)
+        result.comment = get_comment_for_node(node.arguments)
 
         factory_node = nil
 
@@ -74,6 +74,7 @@ module DocJS
         return false unless node.value.value == 'dojo'
         return false unless node.parent.is_a? RKelly::Nodes::FunctionCallNode
         return false unless node.parent.arguments.value.length == 3
+        return false unless node.parent.arguments.value.first.is_a? RKelly::Nodes::StringNode
         true
       end
 
@@ -94,8 +95,12 @@ module DocJS
 
         result.name = remove_quotes(name_node.value)
 
-        (inherited_node.value.is_a?(Array) ? inherited_node.value : [inherited_node.value]).each do |inherited|
-          result.extends << node_to_path(inherited.value).join('.')
+        if inherited_node.is_a? RKelly::Nodes::DotAccessorNode
+          result.extends << node_to_path(inherited_node)
+        elsif inherited_node.is_a? RKelly::Nodes::ArrayNode
+          inherited_node.value.each do |inherited|
+            result.extends << node_to_path(inherited.value)
+          end
         end
 
         properties_node.value.each do |property|
